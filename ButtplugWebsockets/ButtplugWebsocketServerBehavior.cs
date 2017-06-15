@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Buttplug.Core;
-using Buttplug.Messages;
 using JetBrains.Annotations;
 using WebSocketSharp;
 using WebSocketSharp.Server;
+using Buttplug.Messages;
 
 namespace ButtplugWebsockets
 {
