@@ -1,14 +1,14 @@
-﻿using Buttplug.Core;
+﻿using System;
+using System.Threading;
+using Buttplug.Core;
 using Buttplug.Messages;
 using ButtplugClient.Core;
 using ButtplugWebsockets;
-using System;
-using System.Threading;
 using Xunit;
 
 namespace ButtplugClientTest
 {
-    public class ButtplugClientTests : ButtplugServiceFactory
+    public class ButtplugClientTests : IButtplugServiceFactory
     {
         public ButtplugService GetService()
         {
@@ -40,7 +40,8 @@ namespace ButtplugClientTest
             Assert.True(res is Test);
             Assert.True(((Test)res).TestString == "Test string");
             Assert.True(((Test)res).Id == msgId);
-        }
 
+            server.StopServer();
+        }
     }
 }
