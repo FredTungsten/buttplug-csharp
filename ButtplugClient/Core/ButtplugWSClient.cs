@@ -159,7 +159,7 @@ namespace ButtplugClient.Core
                             if (msg.Id > 0 && _waitingMsgs.TryRemove(msg.Id, out TaskCompletionSource<ButtplugMessage> queued))
                             {
                                 Console.WriteLine("Resolving message!");
-                                queued.TrySetResult(msg);
+                                Console.WriteLine(queued.TrySetResult(msg));
                                 continue;
                             }
 
