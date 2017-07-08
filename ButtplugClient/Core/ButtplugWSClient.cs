@@ -89,7 +89,7 @@ namespace ButtplugClient.Core
 
             _readThread = new Thread(wsReader);
             _readThread.Start();
-
+            Console.WriteLine("Sending req server info");
             var res = SendMessage(new RequestServerInfo(_clientName)).GetAwaiter().GetResult();
             switch (res)
             {
@@ -187,15 +187,17 @@ namespace ButtplugClient.Core
 
             try
             {
+                Console.WriteLine("Sending internal");
                 lock (sendLock)
                 {
                     _ws.SendAsync(segment1, WebSocketMessageType.Text, true, CancellationToken.None).Wait();
                 }
-
+                Console.WriteLine("Done sending");
                 return await promise.Task;
             }
             catch (WebSocketException)
             {
+                Console.WriteLine("send failed");
                 // Noop - WS probably closed on us during read
                 return null;
             }
