@@ -94,8 +94,10 @@ namespace ButtplugClient.Core
             switch (res)
             {
                 case ServerInfo si:
+                    Console.WriteLine("Setting up timer");
                     if (si.MaxPingTime > 0)
                     {
+                        Console.WriteLine("timer set");
                         _pingTimer = new Timer(onPingTimer, null, 0, Convert.ToInt32(Math.Round(((double)si.MaxPingTime) / 2, 0)));
                     }
 
@@ -104,6 +106,7 @@ namespace ButtplugClient.Core
                 case Error e:
                     break;
             }
+            Console.WriteLine("Done connecting");
         }
 
         public async Task Diconnect()
