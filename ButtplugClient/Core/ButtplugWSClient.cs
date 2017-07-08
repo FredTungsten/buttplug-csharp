@@ -143,6 +143,7 @@ namespace ButtplugClient.Core
                 {
                     var buffer = new byte[5];
                     var segment = new ArraySegment<byte>(buffer);
+                    Console.WriteLine("Waiting on a message!");
                     var result = _ws.ReceiveAsync(segment, CancellationToken.None).GetAwaiter().GetResult();
                     var input = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
@@ -150,10 +151,14 @@ namespace ButtplugClient.Core
                     if (result.EndOfMessage)
                     {
                         var msgs = Deserialize(sb.ToString());
+
                         foreach (var msg in msgs)
                         {
+                            Console.WriteLine("Got message!");
+                            Console.WriteLine(msg);
                             if (msg.Id > 0 && _waitingMsgs.TryRemove(msg.Id, out TaskCompletionSource<ButtplugMessage> queued))
                             {
+                                Console.WriteLine("Resolving message!");
                                 queued.TrySetResult(msg);
                                 continue;
                             }
