@@ -12,7 +12,7 @@ namespace ButtplugClientTest
     {
         public ButtplugService GetService()
         {
-            return new ButtplugService("Test service", 0);
+            return new ButtplugService("Test service", 10000);
         }
 
         [Fact]

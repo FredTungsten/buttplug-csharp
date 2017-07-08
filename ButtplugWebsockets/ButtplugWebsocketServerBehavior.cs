@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Linq;
 using Buttplug.Core;
 using JetBrains.Annotations;
@@ -92,3 +93,4 @@ namespace ButtplugWebsockets
         }
     }
 }
+*/

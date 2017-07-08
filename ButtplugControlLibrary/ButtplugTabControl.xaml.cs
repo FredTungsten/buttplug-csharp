@@ -44,7 +44,7 @@ namespace ButtplugControlLibrary
 
             try
             {
-                _ravenClient = new RavenClient("SENTRY_API_URL");
+                //_ravenClient = new RavenClient("SENTRY_API_URL");
             }
             catch (ArgumentException)
             {

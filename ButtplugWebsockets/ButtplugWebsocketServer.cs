@@ -1,64 +1,88 @@
-﻿using System.Text;
+﻿using System;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Buttplug.Core;
 using JetBrains.Annotations;
-using WebSocketSharp;
-using WebSocketSharp.Net;
-using WebSocketSharp.Server;
+using vtortola.WebSockets;
+// using HttpStatusCode = WebSocketSharp.Net.HttpStatusCode;
 
 namespace ButtplugWebsockets
 {
     public class ButtplugWebsocketServer
     {
-        private HttpServer _wsServer;
+        private WebSocketListener _server;
 
         public void StartServer([NotNull] IButtplugServiceFactory aFactory, int aPort = 12345, bool aSecure = false)
         {
-            _wsServer = new HttpServer(aPort, aSecure);
-            _wsServer.RemoveWebSocketService("/buttplug");
-            _wsServer.OnGet += OnGetHandler;
-            if (aSecure)
-            {
-                _wsServer.SslConfiguration.ServerCertificate = CertUtils.GetCert("Buttplug");
-            }
+            CancellationTokenSource cancellation = new CancellationTokenSource();
 
-            _wsServer.WebSocketServices.AddService<ButtplugWebsocketServerBehavior>("/buttplug", (aObj) => aObj.Service = aFactory.GetService());
-            _wsServer.Start();
+            var endpoint = new IPEndPoint(IPAddress.Any, aPort);
+            var _server = new WebSocketListener(endpoint);
+            var rfc6455 = new vtortola.WebSockets.Rfc6455.WebSocketFactoryRfc6455(_server);
+            _server.Standards.RegisterStandard(rfc6455);
+            _server.Start();
+
+            var task = Task.Run(() => AcceptWebSocketClientsAsync(_server, cancellation.Token));
+        }
+
+        private static async Task AcceptWebSocketClientsAsync(WebSocketListener server, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    var ws = await server.AcceptWebSocketAsync(token).ConfigureAwait(false);
+                    if (ws != null)
+                    {
+                       Task.Run(() => HandleConnectionAsync(ws, token));
+                    }
+                }
+                catch (Exception aex)
+                {
+                    // Log("Error Accepting clients: " + aex.GetBaseException().Message);
+                }
+            }
+            // Log("Server Stop accepting clients");
+        }
+
+        private static async Task HandleConnectionAsync(WebSocket ws, CancellationToken cancellation)
+        {
+            var buttplug = new ButtplugService("Websocket Server", 10000);
+            buttplug.MessageReceived += async (aObject, aEvent) =>
+            {
+                var msg = buttplug.Serialize(aEvent.Message);
+                await ws.WriteStringAsync(msg, cancellation);
+            };
+
+            try
+            {
+                while (ws.IsConnected && !cancellation.IsCancellationRequested)
+                {
+                    var msg = await ws.ReadStringAsync(cancellation).ConfigureAwait(false);
+                    if (msg != null)
+                    {
+                        var respMsg = buttplug.Serialize(await buttplug.SendMessage(msg));
+                        await ws.WriteStringAsync(respMsg, cancellation);
+                    }
+                }
+            }
+            catch (Exception aex)
+            {
+                // Log("Error Handling connection: " + aex.GetBaseException().Message);
+                try { ws.Close(); }
+                catch { }
+            }
+            finally
+            {
+                buttplug = null;
+                ws.Dispose();
+            }
         }
 
         public void StopServer()
         {
-            if (_wsServer is null)
-            {
-                return;
-            }
-
-            _wsServer.Stop();
-            _wsServer.RemoveWebSocketService("/buttplug");
-            _wsServer = null;
-        }
-
-        private static void OnGetHandler(object aSender, HttpRequestEventArgs aEvent)
-        {
-            var req = aEvent.Request;
-            var res = aEvent.Response;
-
-            // Wouldn't it be cool to present syncydink here?
-            var path = req.RawUrl;
-            if (path == "/")
-            {
-                path += "index.html";
-            }
-
-            if (path != "/index.html")
-            {
-                res.StatusCode = (int)HttpStatusCode.TemporaryRedirect;
-                res.RedirectLocation = "/index.html";
-                return;
-            }
-
-            res.ContentType = "text/html";
-            res.ContentEncoding = Encoding.UTF8;
-            res.WriteContent(Encoding.UTF8.GetBytes("<html><head><title>Buttplug server</title></head><body><h1>Buttplug server</h1><p>The server is running.</p></body></html>"));
         }
     }
 }
