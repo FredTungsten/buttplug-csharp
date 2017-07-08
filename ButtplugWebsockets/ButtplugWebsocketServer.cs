@@ -49,7 +49,7 @@ namespace ButtplugWebsockets
 
         private static async Task HandleConnectionAsync(WebSocket ws, CancellationToken cancellation)
         {
-            var buttplug = new ButtplugService("Websocket Server", 10000);
+            var buttplug = new ButtplugService("Websocket Server", 100);
             buttplug.MessageReceived += async (aObject, aEvent) =>
             {
                 var msg = buttplug.Serialize(aEvent.Message);
