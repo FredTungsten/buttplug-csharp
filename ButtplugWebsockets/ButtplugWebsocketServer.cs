@@ -17,18 +17,19 @@ namespace ButtplugWebsockets
         public void StartServer([NotNull] IButtplugServiceFactory aFactory, int aPort = 12345, bool aSecure = false)
         {
             CancellationTokenSource cancellation = new CancellationTokenSource();
-
-            var endpoint = new IPEndPoint(IPAddress.Any, aPort);
+            Console.WriteLine("Starting server");
+            var endpoint = new IPEndPoint(IPAddress.Loopback, aPort);
             var _server = new WebSocketListener(endpoint);
             var rfc6455 = new vtortola.WebSockets.Rfc6455.WebSocketFactoryRfc6455(_server);
             _server.Standards.RegisterStandard(rfc6455);
             _server.Start();
-
+            Console.WriteLine("Server started.");
             var task = Task.Run(() => AcceptWebSocketClientsAsync(_server, cancellation.Token));
         }
 
         private static async Task AcceptWebSocketClientsAsync(WebSocketListener server, CancellationToken token)
         {
+            Console.WriteLine("Got connection!");
             while (!token.IsCancellationRequested)
             {
                 try
