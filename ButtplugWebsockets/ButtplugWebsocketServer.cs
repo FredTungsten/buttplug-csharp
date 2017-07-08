@@ -35,6 +35,7 @@ namespace ButtplugWebsockets
                 try
                 {
                     var ws = await server.AcceptWebSocketAsync(token).ConfigureAwait(false);
+                    Console.WriteLine("accepting");
                     if (ws != null)
                     {
                        Task.Run(() => HandleConnectionAsync(ws, token));
@@ -50,6 +51,7 @@ namespace ButtplugWebsockets
 
         private static async Task HandleConnectionAsync(WebSocket ws, CancellationToken cancellation)
         {
+            Console.WriteLine("Listening");
             var buttplug = new ButtplugService("Websocket Server", 0);
             buttplug.MessageReceived += async (aObject, aEvent) =>
             {
@@ -66,6 +68,7 @@ namespace ButtplugWebsockets
                 while (ws.IsConnected && !cancellation.IsCancellationRequested)
                 {
                     var msg = await ws.ReadStringAsync(cancellation).ConfigureAwait(false);
+                    Console.WriteLine("Got message!");
                     if (msg != null)
                     {
                         var respMsg = buttplug.Serialize(await buttplug.SendMessage(msg));
@@ -88,7 +91,10 @@ namespace ButtplugWebsockets
 
         public void StopServer()
         {
-            _server.Stop();
+            if (_server != null)
+            {
+                _server.Stop();
+            }
         }
     }
 }
