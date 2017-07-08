@@ -12,7 +12,7 @@ namespace ButtplugClientTest
     {
         public ButtplugService GetService()
         {
-            return new ButtplugService("Test service", 10000);
+            return new ButtplugService("Test service", 0);
         }
 
         [Fact]
@@ -22,7 +22,7 @@ namespace ButtplugClientTest
             server.StartServer(this);
 
             var client = new ButtplugWSClient("Test client");
-            client.Connect(new Uri("ws://localhost:12345/buttplug")).Wait();
+            client.Connect(new Uri("ws://localhost:12345")).Wait();
 
             var msgId = client.nextMsgId;
             var res = client.SendMessage(new Test("Test string", msgId)).GetAwaiter().GetResult();

@@ -49,9 +49,13 @@ namespace ButtplugWebsockets
 
         private static async Task HandleConnectionAsync(WebSocket ws, CancellationToken cancellation)
         {
-            var buttplug = new ButtplugService("Websocket Server", 100);
+            var buttplug = new ButtplugService("Websocket Server", 0);
             buttplug.MessageReceived += async (aObject, aEvent) =>
             {
+                if (buttplug == null)
+                {
+                    return;
+                }
                 var msg = buttplug.Serialize(aEvent.Message);
                 await ws.WriteStringAsync(msg, cancellation);
             };
