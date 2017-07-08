@@ -87,6 +87,7 @@ namespace ButtplugWebsockets
 
         public void StopServer()
         {
+            _server.Stop();
         }
     }
 }
