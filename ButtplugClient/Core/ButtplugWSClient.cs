@@ -90,7 +90,7 @@ namespace ButtplugClient.Core
             _readThread = new Thread(wsReader);
             _readThread.Start();
             Console.WriteLine("Sending req server info");
-            var res = SendMessage(new RequestServerInfo(_clientName)).GetAwaiter().GetResult();
+            var res = SendMessage(new RequestServerInfo(_clientName, 12345)).GetAwaiter().GetResult();
             switch (res)
             {
                 case ServerInfo si:
@@ -160,6 +160,7 @@ namespace ButtplugClient.Core
                             {
                                 Console.WriteLine("Resolving message!");
                                 Console.WriteLine(queued.TrySetResult(msg));
+                                Console.WriteLine(msg.Id);
                                 continue;
                             }
 
@@ -192,7 +193,8 @@ namespace ButtplugClient.Core
 
             var output = Serialize(aMsg);
             var segment1 = new ArraySegment<byte>(Encoding.UTF8.GetBytes(output));
-
+            Console.WriteLine("waiting for");
+            Console.WriteLine(aMsg.Id);
             try
             {
                 Console.WriteLine("Sending internal");
